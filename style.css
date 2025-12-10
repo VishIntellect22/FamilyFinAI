@@ -1,0 +1,195 @@
+:root {
+    --primary: #6c5ce7;      /* Purple */
+    --primary-dark: #5b4cc4;
+    --accent: #00b894;       /* Green for money */
+    --loss: #d63031;         /* Red for loss */
+    --bg: #f5f6fa;
+    --text: #2d3436;
+}
+
+body {
+    font-family: 'Poppins', sans-serif; /* Modern font */
+    background-color: var(--bg);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow: hidden; /* Prevent scrolling body */
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    background: white;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.screen.active {
+    display: flex;
+    animation: slideUp 0.4s ease-out;
+}
+
+/* START SCREEN */
+.logo-area {
+    margin-top: 40px;
+    text-align: center;
+    color: var(--primary);
+}
+
+.input-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.input-group label {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #636e72;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #dfe6e9;
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* CURRENCY TOGGLE */
+.currency-toggle {
+    display: flex;
+    gap: 10px;
+}
+
+.curr-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid var(--primary);
+    background: white;
+    color: var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.curr-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* GAME HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.stat-pill {
+    background: var(--primary);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+.stat-pill .value {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* CARD & GAMEPLAY */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card {
+    background: white;
+    border: 1px solid #eee;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(108, 92, 231, 0.15);
+    text-align: center;
+}
+
+.option-btn {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 12px;
+    background-color: #f1f2f6;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.option-btn:hover { background-color: #dfe6e9; }
+.option-btn.selected {
+    border: 2px solid var(--primary);
+    background-color: #eef1ff;
+}
+
+/* FOOTER CONTROLS */
+footer {
+    margin-top: auto;
+    display: flex;
+    gap: 15px;
+    padding-top: 20px;
+}
+
+.hidden { visibility: hidden; opacity: 0; }
+footer.hidden { display: none; }
+
+.main-btn, .nav-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+}
+
+.main-btn, .nav-btn.primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.4);
+}
+
+.nav-btn.secondary {
+    background: #fab1a0;
+    color: #d63031;
+    background: white;
+    border: 2px solid #fab1a0;
+}
+
+/* FEEDBACK COLORS */
+.gain { color: var(--accent); font-weight: bold; }
+.loss { color: var(--loss); font-weight: bold; }
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

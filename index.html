@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Familyfin AI</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6c5ce7">
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5b4cc4;
+            --accent: #00b894;
+            --loss: #d63031;
+            --bg: #dfe6e9;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            height: 100vh; /* Full viewport height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent background scroll */
+        }
+
+        /* Responsive Container */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 500px; /* Limits width on desktop */
+            background: var(--card-bg);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        /* Screens Logic */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto; /* Allows scrolling inside the screen if content is long */
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- START SCREEN --- */
+        .logo-area {
+            text-align: center;
+            margin-top: 10vh;
+            margin-bottom: 30px;
+        }
+        .logo-area h1 { color: var(--primary); font-size: 2.5rem; margin: 0; }
+        .logo-area p { color: #636e72; margin-top: 5px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+        
+        input[type="text"] {
+            width: 100%; padding: 15px; border: 2px solid #b2bec3;
+            border-radius: 12px; font-size: 1rem; outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+
+        .currency-toggle { display: flex; gap: 10px; }
+        .curr-btn {
+            flex: 1; padding: 12px; border: 2px solid var(--primary);
+            background: transparent; color: var(--primary);
+            border-radius: 10px; font-weight: bold; cursor: pointer;
+        }
+        .curr-btn.active { background: var(--primary); color: white; }
+
+        /* --- GAMEPLAY SCREEN --- */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 15px; border-bottom: 1px solid #f1f2f6;
+            margin-bottom: 15px; flex-shrink: 0;
+        }
+
+        .stat-pill {
+            background: var(--primary); color: white;
+            padding: 8px 16px; border-radius: 20px;
+            text-align: center; min-width: 90px;
+            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+        }
+        .stat-pill small { display: block; font-size: 0.75rem; opacity: 0.9; }
+        .stat-pill strong { font-size: 1.1rem; }
+
+        /* Main Card Area */
+        main {
+            flex: 1; /* Takes available space */
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .scenario-card {
+            background: #fdfdfd; padding: 20px; border-radius: 15px;
+            border: 1px solid #eee; text-align: center;
+            margin-bottom: 10px;
+        }
+        .scenario-card h2 { margin-top: 0; color: var(--text); }
+        .scenario-card p { color: #636e72; line-height: 1.5; font-size: 1.05rem; }
+
+        .options-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+        .option-btn {
+            width: 100%; padding: 18px; border: none; border-radius: 12px;
+            background: #f1f2f6; color: var(--text); font-size: 1rem; font-weight: 600;
+            text-align: left; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .option-btn:active { transform: scale(0.98); }
+        .option-btn.selected { background: #eef1ff; border: 2px solid var(--primary); color: var(--primary); }
+        .option-btn:disabled { opacity: 0.7; cursor: default; }
+
+        /* Feedback Area */
+        #feedback-msg {
+            margin-top: 15px; padding: 15px; border-radius: 10px;
+            text-align: center; font-weight: bold; background: #fafafa;
+            animation: slideUp 0.3s ease-out;
+        }
+        .gain { color: var(--accent); border: 1px solid var(--accent); background: #edfffa !important; }
+        .loss { color: var(--loss); border: 1px solid var(--loss); background: #fff0f0 !important; }
+
+        /* Footer Controls */
+        footer {
+            margin-top: auto; padding-top: 15px; display: flex; gap: 10px; flex-shrink: 0;
+        }
+        .hidden { display: none !important; }
+
+        .btn-main {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            color: white; background: var(--primary);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+        .btn-sec {
+            flex: 1; padding: 15px; border-radius: 12px; border: 2px solid #fab1a0;
+            background: white; color: #d63031; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- END SCREEN --- */
+        .report-card {
+            background: var(--bg); padding: 30px; border-radius: 20px;
+            text-align: center; margin: 20px 0;
+        }
+        .history-log {
+            text-align: left; font-size: 0.9rem; margin-top: 20px;
+            max-height: 200px; overflow-y: auto;
+        }
+        .history-item {
+            padding: 8px 0; border-bottom: 1px solid #dfe6e9; display: flex; justify-content: space-between;
+        }
+
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Mobile Fixes */
+        @media (max-height: 600px) {
+            .logo-area { margin-top: 20px; }
+            .scenario-card { padding: 15px; }
+            .option-btn { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div id="start-screen" class="screen active">
+        <div class="logo-area">
+            <h1>FamilyFin Ai🚀</h1>
+            <p>Money Management Guide</p>
+        </div>
+        
+        <div class="form-group">
+            <label>Team / Player Name</label>
+            <input type="text" id="player-name" placeholder="E.g. Team Alpha">
+        </div>
+
+        <div class="form-group">
+            <label>Select Currency</label>
+            <div class="currency-toggle">
+                <button class="curr-btn active" onclick="setCurrency('USD', this)">$ Dollar</button>
+                <button class="curr-btn" onclick="setCurrency('INR', this)">₹ Rupee</button>
+            </div>
+        </div>
+
+        <div style="flex:1"></div> <button class="btn-main" onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <header>
+            <div class="stat-pill">
+                <small>Quarter</small>
+                <strong id="quarter-display">1/12</strong>
+            </div>
+            <div class="stat-pill">
+                <small>Balance</small>
+                <strong id="balance-display">1000</strong>
+            </div>
+        </header>
+
+        <main>
+            <div class="scenario-card">
+                <h2 id="scenario-title">...</h2>
+                <p id="scenario-desc">...</p>
+            </div>
+
+            <div id="options-container" class="options-grid"></div>
+            <div id="feedback-msg" class="hidden"></div>
+        </main>
+
+        <footer id="game-controls" class="hidden">
+            <button class="btn-sec" onclick="undoMove()">↩ Undo</button>
+            <button class="btn-main" onclick="nextMove()">Next ➡</button>
+        </footer>
+    </div>
+
+    <div id="end-screen" class="screen">
+        <div style="text-align: center; margin-top: 20px;">
+            <h1>Report Card</h1>
+            <p id="player-display-name" style="color:#636e72"></p>
+        </div>
+
+        <div class="report-card">
+            <p>Final Net Worth</p>
+            <h1 id="final-balance" style="color:var(--primary); font-size: 2.5rem; margin:10px 0;">0</h1>
+            <h3 id="final-verdict">...</h3>
+        </div>
+
+        <p style="font-weight:bold; margin-bottom:5px;">Decision History:</p>
+        <div id="history-list" class="history-log"></div>
+
+        <div style="flex:1"></div>
+        <button class="btn-main" onclick="location.reload()">Play Again</button>
+    </div>
+
+</div>
+
+<script>
+    /* --- JAVASCRIPT LOGIC --- */
+    
+    // Config
+    const CONFIG = {
+        USD: { sym: "$", rate: 1 },
+        INR: { sym: "₹", rate: 80 }
+    };
+
+    let state = {
+        currency: 'USD',
+        quarter: 0,
+        balance: 1000, // Base USD
+        history: [],
+        lastTurn: null
+    };
+
+    // Scenarios (Base values in USD)
+    const SCENARIOS = [
+        { q: 1, title: "Savings Plan", text: "You have initial savings. How do you store it?", opts: [ {txt: "Keep in Cash", val: -50, msg: "Lost value due to inflation"}, {txt: "High Yield Savings", val: 50, msg: "Earned interest"} ] },
+        { q: 2, title: "Emergency!", text: "Your work laptop broke down.", opts: [ {txt: "Buy Premium New", val: -800, msg: "Expensive but reliable"}, {txt: "Repair Old", val: -200, msg: "Cheap fix, high risk"} ] },
+        { q: 3, title: "Income Opportunity", text: "Offer to work weekends.", opts: [ {txt: "Take the Job", val: 500, msg: "Hard work paid off"}, {txt: "Relax", val: -50, msg: "Spent on entertainment"} ] },
+        { q: 4, title: "Market Volatility", text: "Stocks are shaky.", opts: [ {txt: "Invest Aggressively", val: -100, msg: "Market crashed! You lost money"}, {txt: "Keep Safe", val: 0, msg: "No gain, no loss"} ] },
+        { q: 5, title: "Windfall", text: "You received a bonus!", opts: [ {txt: "Save It", val: 300, msg: "Added to reserves"}, {txt: "Splurge", val: -100, msg: "Spent bonus + extra costs"} ] },
+        { q: 6, title: "Debt Trap", text: "Pre-approved loan offer.", opts: [ {txt: "Take Loan", val: -400, msg: "Interest payments hurt you"}, {txt: "Decline", val: 0, msg: "Avoided bad debt"} ] },
+        { q: 7, title: "Inflation Spike", text: "Groceries cost 15% more.", opts: [ {txt: "Budget Strictly", val: -50, msg: "Managed expenses well"}, {txt: "Ignore", val: -200, msg: "Overspending drain"} ] },
+        { q: 8, title: "Upskilling", text: "Certification course available.", opts: [ {txt: "Buy Course", val: -200, msg: "Invested in yourself"}, {txt: "Skip", val: 0, msg: "Saved cash today"} ] },
+        { q: 9, title: "Career Growth", text: "Did you upskill in Q8?", opts: [ {txt: "Yes (I did)", val: 600, msg: "Promotion! Salary bump"}, {txt: "No (I skipped)", val: 0, msg: "Stagnant salary"} ] },
+        { q: 10, title: "Car Repair", text: "Brakes need fixing.", opts: [ {txt: "Official Service", val: -300, msg: "Safe & Durable"}, {txt: "Local Mechanic", val: -100, msg: "Temporary fix"} ] },
+        { q: 11, title: "Tax Season", text: "Filing returns.", opts: [ {txt: "Hire Accountant", val: -100, msg: "Found a refund! (+150 net)"}, {txt: "Do Yourself", val: -50, msg: "Mistakes caused fines"} ] },
+        { q: 12, title: "Celebration", text: "End of year party.", opts: [ {txt: "Grand Party", val: -500, msg: "Fun but costly"}, {txt: "Potluck", val: -50, msg: "Cheap and cheerful"} ] }
+    ];
+
+    // Helper Functions
+    const getEl = (id) => document.getElementById(id);
+    const format = (amt) => {
+        const rate = CONFIG[state.currency].rate;
+        const sym = CONFIG[state.currency].sym;
+        return `${sym}${(amt * rate).toLocaleString()}`;
+    };
+
+    // Core Logic
+    function setCurrency(curr, btn) {
+        state.currency = curr;
+        document.querySelectorAll('.curr-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function startGame() {
+        const name = getEl('player-name').value || "Player 1";
+        getEl('player-display-name').innerText = name;
+        state.quarter = 0;
+        state.balance = 1000;
+        state.history = [];
+        
+        getEl('start-screen').classList.remove('active');
+        getEl('game-screen').classList.add('active');
+        renderTurn();
+    }
+
+    function renderTurn() {
+        if (state.quarter >= SCENARIOS.length) {
+            endGame();
+            return;
+        }
+
+        const data = SCENARIOS[state.quarter];
+        
+        // Update UI
+        getEl('quarter-display').innerText = `${data.q} / 12`;
+        getEl('balance-display').innerText = format(state.balance);
+        getEl('scenario-title').innerText = data.title;
+        getEl('scenario-desc').innerText = data.text;
+        
+        // Reset Feedback/Footer
+        getEl('feedback-msg').className = 'hidden';
+        getEl('game-controls').className = 'hidden';
+        
+        // Buttons
+        const container = getEl('options-container');
+        container.innerHTML = '';
+        
+        data.opts.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span>${opt.txt}</span> <span>?</span>`;
+            btn.onclick = () => makeDecision(idx, opt);
+            container.appendChild(btn);
+        });
+    }
+
+    function makeDecision(idx, opt) {
+        // Save state for undo
+        state.lastTurn = {
+            q: state.quarter,
+            bal: state.balance,
+            histLen: state.history.length
+        };
+
+        // Apply logic
+        state.balance += opt.val;
+        
+        // Update UI
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => b.disabled = true);
+        btns[idx].classList.add('selected');
+        btns[idx].innerHTML = `<span>${opt.txt}</span> <span>${opt.val >= 0 ? '+' : ''}${format(opt.val)}</span>`;
+
+        // Feedback
+        const fb = getEl('feedback-msg');
+        fb.innerHTML = `${opt.msg}`;
+        fb.className = opt.val >= 0 ? 'gain' : 'loss'; // Show correct color
+        fb.classList.remove('hidden');
+
+        // Header Update
+        getEl('balance-display').innerText = format(state.balance);
+
+        // History
+        state.history.push(`Q${state.quarter+1}: ${opt.txt} (${opt.val >= 0 ? '+' : ''}${format(opt.val)})`);
+
+        // Show Footer
+        getEl('game-controls').classList.remove('hidden');
+        getEl('game-controls').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function undoMove() {
+        if(!state.lastTurn) return;
+        state.quarter = state.lastTurn.q;
+        state.balance = state.lastTurn.bal;
+        if(state.history.length > state.lastTurn.histLen) state.history.pop();
+        
+        renderTurn();
+    }
+
+    function nextMove() {
+        state.quarter++;
+        renderTurn();
+    }
+
+    function endGame() {
+        getEl('game-screen').classList.remove('active');
+        getEl('end-screen').classList.add('active');
+        
+        getEl('final-balance').innerText = format(state.balance);
+        
+        const rate = CONFIG[state.currency].rate;
+        const val = state.balance * rate;
+        const high = 1500 * rate;
+        const low = 800 * rate;
+        const verdict = getEl('final-verdict');
+
+        if(val > high) {
+            verdict.innerText = "🌟 Financial Wizard!";
+            verdict.style.color = "var(--accent)";
+        } else if (val > low) {
+            verdict.innerText = "✅ Survivor";
+            verdict.style.color = "orange";
+        } else {
+            verdict.innerText = "⚠️ Needs Improvement";
+            verdict.style.color = "var(--loss)";
+        }
+
+        getEl('history-list').innerHTML = state.history.map(h => `<div class="history-item"><span>${h.split(':')[0]}</span><span>${h.split(':')[1]}</span></div>`).join('');
+    }
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log('SW Registered'));
+    }
+</script>
+</body>
+</html>
